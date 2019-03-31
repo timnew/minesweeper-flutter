@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:minesweeper/game_screen/GameScreen.dart';
 
-class MyApp extends StatelessWidget {
+class MineSweeperApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) => MaterialApp(
