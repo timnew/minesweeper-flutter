@@ -28,17 +28,17 @@ class MineField {
   }
 
   void reset() {
-    final layout = ""
-        + "+........."
-        + ".+........"
-        + ".+........"
-        + ".....++..."
-        + ".....+...."
-        + ".........."
-        + ".......+.."
-        + ".+.....+.."
-        + "..+......."
-        + "..........";
+    _remainingMineCount = mineCount;
+    _remainingCellCount = cells.length - mineCount;
+    _gameResult = GameResult.Undetermined;
+    currentAction = CellAction.Reveal;
+
+    final layout = List<CellContent>(cells.length);
+    for (int i = 0; i < layout.length; i++) {
+      layout[i] = i < mineCount ? CellContent.Mine : CellContent.None;
+    }
+
+    layout.shuffle();
 
     int x = 0;
     int y = 0;
@@ -46,19 +46,13 @@ class MineField {
     for (int i = 0; i < cells.length; i++) {
       cells[i] = Cell(parent: this,
           position: Position(x, y),
-          content: layout[i] == '+' ? CellContent.Mine : CellContent
-              .None);
+          content: layout[i]);
 
       if (++x == size.width) {
         y++;
         x = 0;
       }
     }
-
-    _remainingMineCount = mineCount;
-    _remainingCellCount = cells.length - mineCount;
-    _gameResult = GameResult.Undetermined;
-    currentAction = CellAction.Reveal;
   }
 
   void updateMineCount(int delta) {
