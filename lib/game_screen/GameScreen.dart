@@ -33,7 +33,7 @@ class _GameScreenState extends State<GameScreen> {
       ),
       body: MineFieldView(mineField: _mineField),
       persistentFooterButtons: <Widget>[
-        FlatButton(child: Text("Reset"), onPressed: () {
+        FlatButton(child: Icon(Icons.refresh), onPressed: () {
           setState(() {
             _mineField.reset();
           });
@@ -59,20 +59,22 @@ class _GameScreenState extends State<GameScreen> {
         FlatButton(
           child: Icon(Icons.adb),
           textColor: _mineField.currentAction == CellAction.Evaluate ? Colors
-              .blue : Colors.black,
+              .blue : _mineField.currentAction == CellAction.SuperEvaluate
+              ? Colors.red
+              : Colors.black,
           onPressed: () {
             setState(() {
-              _mineField.currentAction = CellAction.Evaluate;
-            });
-          },
-        ),
-        FlatButton(
-          child: Icon(Icons.adb),
-          textColor: _mineField.currentAction == CellAction.SuperEvaluate ? Colors
-              .blue : Colors.red,
-          onPressed: () {
-            setState(() {
-              _mineField.currentAction = CellAction.SuperEvaluate;
+              switch (_mineField.currentAction) {
+                case CellAction.SuperEvaluate:
+                  _mineField.currentAction = CellAction.Evaluate;
+                  break;
+                case CellAction.Evaluate:
+                  _mineField.currentAction = CellAction.SuperEvaluate;
+                  break;
+                default:
+                  _mineField.currentAction = CellAction.Evaluate;
+                  break;
+              }
             });
           },
         ),
