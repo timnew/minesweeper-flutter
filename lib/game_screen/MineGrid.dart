@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:minesweeper/game_screen/MineField.dart';
 
 class MineFieldView extends StatefulWidget {
   final int width;
@@ -12,60 +13,64 @@ class MineFieldView extends StatefulWidget {
         assert(mineCount > 0);
 
   @override
-  State<StatefulWidget> createState() => MineField(width, height, mineCount);
+  State<StatefulWidget> createState() =>
+      _MineFieldViewState(MineField(width, height, mineCount));
 }
 
-class MineField extends State<MineFieldView> {
-  int get width => widget.width;
+class _MineFieldViewState extends State<MineFieldView> {
+  final MineField mineField;
 
-  int get height => widget.height;
-
-  int get mineCount => widget.mineCount;
-
-  List<Cell> cells;
-
-  MineField(int width, int height, int mineCount) {
-    cells = List(width * height);
-
-    for (int row = 0; row < height; row++) {
-      for (int col = 0; col < width; col++) {
-        cells[row * width + col] = Cell(x: col, y: row, type: CellType.Blank);
-      }
-    }
-  }
+  _MineFieldViewState(this.mineField);
 
   @override
   Widget build(BuildContext context) => Container(
         decoration: BoxDecoration(border: Border.all(color: Colors.blue)),
         child:
-            GridView.count(crossAxisCount: width, children: _renderChildren()),
+        GridView.count(
+            crossAxisCount: widget.width, children: _renderChildren()),
       );
 
-  List<Widget> _renderChildren() => cells
+  List<Widget> _renderChildren() =>
+      mineField.cells
       .map((cell) => CellView(key: Key(cell.name), cell: cell))
       .toList(growable: false);
 }
 
-class CellView extends StatelessWidget {
+class CellView extends StatefulWidget {
   final Cell cell;
 
-  CellState get state => cell.state;
-
   CellView({Key key, @required this.cell}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() =>
+      _CellViewState(this.cell);
+}
+
+class _CellViewState extends State<CellView> {
+
+  final Cell cell;
+
+  _CellViewState(this.cell) {
+    cell.onChanged((VoidCallback block) {
+      this.setState(block);
+    });
+  }
+
+  CellState get state => cell.state;
 
   @override
   Widget build(BuildContext context) {
     switch (state) {
       case CellState.Concealed:
-        return _render(_consealedBox, Text("C"));
+        return _render(_consealedBox, null);
       case CellState.Revealed:
-        return _render(_revealedBox, Text("R")); // TODO: show number if needed
+        return _render(_revealedBox, null); // TODO: show number if needed
       case CellState.Flagged:
         return _render(_consealedBox, _flagContent);
-      case CellState.TriggeredByClick:
-        return _render(_triggerdBox, _mineContent);
-      case CellState.TriggeredByWrongFlag:
-        return _render(_triggerdBox, _flagContent);
+      case CellState.ExplodedByClick:
+        return _render(_explodedBox, _mineContent);
+      case CellState.ExplodedByWrongFlag:
+        return _render(_explodedBox, _flagContent);
       default:
         throw StateError("Impossible State");
     }
@@ -77,48 +82,22 @@ class CellView extends StatelessWidget {
   static Decoration _revealedBox = BoxDecoration(
       border: Border.all(color: Colors.black), color: Colors.white);
 
-  static Decoration _triggerdBox = BoxDecoration(
+  static Decoration _explodedBox = BoxDecoration(
       border: Border.all(color: Colors.red), color: Colors.red.withAlpha(50));
 
   static Widget _flagContent = Icon(Icons.flag);
 
   static Widget _mineContent = Icon(Icons.settings);
 
-  Widget _render(Decoration border, Widget content) => Container(
-      width: 10, height: 10, decoration: border, child: Center(child: content));
-}
-
-class Cell {
-  final String name;
-
-  final int x;
-
-  final int y;
-
-  final CellType type;
-
-  CellState _state;
-
-  CellState get state => _state;
-
-  int _minesNearBy;
-
-  int get minesNearBy => _minesNearBy;
-
-  Cell({this.x, this.y, this.type}) : name = "($x, $y)" {
-    this._state = CellState.Concealed;
-  }
-}
-
-enum CellType {
-  Blank,
-  Mine,
-}
-
-enum CellState {
-  Concealed,
-  Revealed,
-  Flagged,
-  TriggeredByClick,
-  TriggeredByWrongFlag
+  Widget _render(Decoration border, Widget content) =>
+      GestureDetector(
+          onTap: () {
+            cell.act(Cell.flagAction);
+          },
+          child: Container(
+              width: 10,
+              height: 10,
+              decoration: border,
+              child: Center(child: content))
+      );
 }
