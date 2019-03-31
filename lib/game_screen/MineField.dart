@@ -1,10 +1,28 @@
 import 'package:flutter/material.dart';
 
+class MineFieldController {
+  MineField mineField;
+
+  void reset() {
+    mineField.reset();
+  }
+}
+
 class MineField {
+  final int width;
+  final int height;
+  final int mineCount;
+  final MineFieldController controller;
   final List<Cell> cells;
 
-  MineField(int width, int height, int mineCount)
+  MineField(this.width, this.height, this.mineCount,
+      this.controller)
       : cells = List(width * height) {
+    controller.mineField = this;
+    reset();
+  }
+
+  void reset() {
     final layout = ""
         + "+........."
         + ".+........"

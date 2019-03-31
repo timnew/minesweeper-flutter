@@ -1,33 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:minesweeper/game_screen/MineField.dart';
 
-class MineFieldView extends StatefulWidget {
-  final int width;
-  final int height;
-  final int mineCount;
+class MineFieldView extends StatelessWidget {
 
-  MineFieldView(
-      {@required this.width, @required this.height, @required this.mineCount})
-      : assert(width > 0),
-        assert(height > 0),
-        assert(mineCount > 0);
-
-  @override
-  State<StatefulWidget> createState() =>
-      _MineFieldViewState(MineField(width, height, mineCount));
-}
-
-class _MineFieldViewState extends State<MineFieldView> {
   final MineField mineField;
 
-  _MineFieldViewState(this.mineField);
+  MineFieldView({Key key, this.mineField}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => Container(
         decoration: BoxDecoration(border: Border.all(color: Colors.blue)),
         child:
         GridView.count(
-            crossAxisCount: widget.width, children: _renderChildren()),
+            crossAxisCount: mineField.width, children: _renderChildren()),
       );
 
   List<Widget> _renderChildren() =>
@@ -36,25 +21,10 @@ class _MineFieldViewState extends State<MineFieldView> {
       .toList(growable: false);
 }
 
-class CellView extends StatefulWidget {
+class CellView extends StatelessWidget {
   final Cell cell;
 
-  CellView({Key key, @required this.cell}) : super(key: key);
-
-  @override
-  State<StatefulWidget> createState() =>
-      _CellViewState(this.cell);
-}
-
-class _CellViewState extends State<CellView> {
-
-  final Cell cell;
-
-  _CellViewState(this.cell) {
-    cell.onChanged((VoidCallback block) {
-      this.setState(block);
-    });
-  }
+  CellView({Key key, this.cell}) : super(key: key);
 
   CellState get state => cell.state;
 
@@ -63,7 +33,8 @@ class _CellViewState extends State<CellView> {
     switch (state) {
       case CellState.Concealed:
         return _render(
-            _consealedBox, cell.content == CellContent.Mine ? Text("*") : null);
+            _consealedBox,
+            cell.content == CellContent.Mine ? _mineContent : null);
       case CellState.Revealed:
         return _render(_revealedBox, null); // TODO: show number if needed
       case CellState.Flagged:
