@@ -223,37 +223,34 @@ class Cell {
         .where((c) => c.state == CellState.Flagged)
         .length;
 
-    if (flagsNearBy != minesNearBy)
+    if (flagsNearBy == minesNearBy) {
+      nearByCells.forEach((c) => c.reveal());
+
+      if (parent.gameResult == GameResult.Failed) {
+        nearByCells
+            .where((c) => c.state == CellState.Flagged)
+            .where((c) => c.content != CellContent.Mine)
+            .forEach((c) => c.updateState(CellState.WrongFlag));
+      }
+    }
+
+    if (!superMode)
       return;
 
-    nearByCells.forEach((c) => c.reveal());
+    final concealedOrFlaggedCount = nearByCells
+        .where((c) =>
+    (c.state == CellState.Flagged) ||
+        (c.state == CellState.Concealed)
+    )
+        .length;
 
-    if (parent.gameResult == GameResult.Failed) {
-      nearByCells
-          .where((c) => c.state == CellState.Flagged)
-          .where((c) => c.content != CellContent.Mine)
-          .forEach((c) => c.updateState(CellState.WrongFlag));
+    if (concealedOrFlaggedCount != minesNearBy)
+      return;
 
-      if (!superMode)
-        return;
-
-      final concealedOrFlaggedCount = nearByCells
-          .where((c) =>
-      (c.state == CellState.Flagged) ||
-          (c.state == CellState.Concealed)
-      )
-          .length;
-
-      if (concealedOrFlaggedCount != minesNearBy)
-        return;
-
-      nearByCells
-          .where((c) => c.state == CellState.Concealed)
-          .forEach((c) => c.flag());
-    }
+    nearByCells
+        .where((c) => c.state == CellState.Concealed)
+        .forEach((c) => c.flag());
   }
-
-
 }
 
 typedef void ChangeNotifier(VoidCallback block);
