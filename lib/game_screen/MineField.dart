@@ -109,7 +109,9 @@ enum CellContent {
 enum CellState {
   Concealed,
   Revealed,
-  Flagged
+  Flagged,
+  Exploded,
+  WrongFlag,
 }
 
 typedef CellState CellAction(Cell cell);

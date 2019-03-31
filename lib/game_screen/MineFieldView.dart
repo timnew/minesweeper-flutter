@@ -35,6 +35,10 @@ class CellView extends StatelessWidget {
         return _render(_revealedBox, null); // TODO: show number if needed
       case CellState.Flagged:
         return _render(_consealedBox, _flagContent);
+      case CellState.Exploded:
+        return _render(_explodedBox, _mineContent);
+      case CellState.WrongFlag:
+        return _render(_explodedBox, _flagContent);
       default:
         throw StateError("Impossible State");
     }
