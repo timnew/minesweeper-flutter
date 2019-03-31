@@ -5,10 +5,27 @@ class MineField {
 
   MineField(int width, int height, int mineCount)
       : cells = List(width * height) {
+    final layout = ""
+        + "+........."
+        + ".+........"
+        + ".+........"
+        + ".....++..."
+        + ".....+...."
+        + ".........."
+        + ".......+.."
+        + ".+.....+.."
+        + "..+......."
+        + "..........";
+
     for (int row = 0; row < height; row++) {
       for (int col = 0; col < width; col++) {
-        cells[row * width + col] =
-            Cell(parent: this, x: col, y: row, content: CellContent.None);
+        final index = row * width + col;
+        cells[index] =
+            Cell(parent: this,
+                x: col,
+                y: row,
+                content: layout[index] == '+' ? CellContent.Mine : CellContent
+                    .None);
       }
     }
   }
@@ -69,15 +86,13 @@ typedef void ChangeNotifier(VoidCallback block);
 
 enum CellContent {
   None,
-  Mine,
+  Mine
 }
 
 enum CellState {
   Concealed,
   Revealed,
-  Flagged,
-  ExplodedByClick,
-  ExplodedByWrongFlag
+  Flagged
 }
 
 typedef CellState CellAction(Cell cell);

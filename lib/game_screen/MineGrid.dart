@@ -62,15 +62,12 @@ class _CellViewState extends State<CellView> {
   Widget build(BuildContext context) {
     switch (state) {
       case CellState.Concealed:
-        return _render(_consealedBox, null);
+        return _render(
+            _consealedBox, cell.content == CellContent.Mine ? Text("*") : null);
       case CellState.Revealed:
         return _render(_revealedBox, null); // TODO: show number if needed
       case CellState.Flagged:
         return _render(_consealedBox, _flagContent);
-      case CellState.ExplodedByClick:
-        return _render(_explodedBox, _mineContent);
-      case CellState.ExplodedByWrongFlag:
-        return _render(_explodedBox, _flagContent);
       default:
         throw StateError("Impossible State");
     }
