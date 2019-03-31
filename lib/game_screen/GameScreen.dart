@@ -12,7 +12,7 @@ class _GameScreenState extends State<GameScreen> {
    MineField _mineField;
 
   _GameScreenState() {
-     _mineField = MineField(10, 10, 10, this.setState);
+    _mineField = MineField(Size(10, 10), 10, this.setState);
   }
 
   @override

@@ -3,16 +3,15 @@ import 'package:flutter/material.dart';
 typedef void StateChangedNotifier(VoidCallback block);
 
 class MineField {
-  final int width;
-  final int height;
+  final Size size;
   final int mineCount;
   final List<Cell> cells;
   final StateChangedNotifier notifyChanged;
 
   CellAction currentAction = Cell.revealAction;
 
-  MineField(this.width, this.height, this.mineCount, this.notifyChanged)
-      : cells = List(width * height) {
+  MineField(this.size, this.mineCount, this.notifyChanged)
+      : cells = List(size.area()) {
     reset();
   }
 
@@ -29,17 +28,63 @@ class MineField {
         + "..+......."
         + "..........";
 
-    for (int row = 0; row < height; row++) {
-      for (int col = 0; col < width; col++) {
-        final index = row * width + col;
-        cells[index] =
-            Cell(parent: this,
-                x: col,
-                y: row,
-                content: layout[index] == '+' ? CellContent.Mine : CellContent
-                    .None);
+    int x = 0;
+    int y = 0;
+
+    for (int i = 0; i < cells.length; i++) {
+      cells[i] = Cell(parent: this,
+          position: Position(x, y),
+          content: layout[i] == '+' ? CellContent.Mine : CellContent
+              .None);
+
+      if (++x == size.width) {
+        y++;
+        x = 0;
       }
     }
+  }
+
+  List<Cell> findNearByCells(Cell cell) =>
+      cell.position
+          .findPossibleNearByPositions()
+          .where((p) => size.isValid(p))
+          .map((p) => size.convertToIndex(p))
+          .map((i) => cells[i])
+          .toList(growable: false);
+}
+
+class Size {
+  final int width;
+  final int height;
+
+  const Size(this.width, this.height);
+
+  int area() => width * height;
+
+  bool isValid(Position pos) =>
+      pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height;
+
+  int convertToIndex(Position pos) =>
+      pos.y * width + pos.x;
+}
+
+class Position {
+  final int x;
+  final int y;
+
+  const Position(this.x, this.y);
+
+  String toString() => "[$x, $y]";
+
+  Iterable<Position> findPossibleNearByPositions() sync* {
+    yield Position(x - 1, y - 1);
+    yield Position(x, y - 1);
+    yield Position(x + 1, y - 1);
+    yield Position(x - 1, y);
+    yield Position(x + 1, y);
+    yield Position(x - 1, y + 1);
+    yield Position(x, y + 1);
+    yield Position(x + 1, y + 1);
   }
 }
 
@@ -48,9 +93,7 @@ class Cell {
 
   final String name;
 
-  final int x;
-
-  final int y;
+  final Position position;
 
   final CellContent content;
 
@@ -62,7 +105,8 @@ class Cell {
 
   int get minesNearBy => _minesNearBy;
 
-  Cell({this.parent, this.x, this.y, this.content}) : name = "($x, $y)" {
+  Cell({this.parent, this.position, this.content})
+      : name = position.toString() {
     this._state = CellState.Concealed;
   }
 
@@ -76,22 +120,62 @@ class Cell {
     });
   }
 
-  static final CellAction revealAction = (Cell cell) {};
-
-  static final CellAction flagAction = (Cell cell) {
-    switch (cell.state) {
+  void flag() {
+    switch (state) {
       case CellState.Concealed:
-        cell.updateState(CellState.Flagged);
+        updateState(CellState.Flagged);
         break;
       case CellState.Flagged:
-        cell.updateState(CellState.Concealed);
+        updateState(CellState.Concealed);
         break;
       default:
         break;
     }
+  }
+
+  void reveal() {
+    if (state != CellState.Concealed)
+      return;
+
+    if (content == CellContent.Mine) {
+      updateState(CellState.Exploded);
+      return;
+    }
+
+    final nearByCells = parent.findNearByCells(this);
+
+    _minesNearBy =
+        nearByCells
+            .map((c) => c.content == CellContent.Mine ? 1 : 0)
+            .reduce((a, b) => a + b);
+
+    updateState(CellState.Revealed);
+
+    if (minesNearBy == 0) {
+      nearByCells.forEach((f) {
+        f.reveal();
+      });
+    }
+  }
+
+  void evaluate() {
+    if (state != CellState.Revealed || minesNearBy == 0)
+      return;
+
+
+  }
+
+  static final CellAction revealAction = (Cell cell) {
+    cell.reveal();
   };
 
-  static final CellAction evaluateAction = (Cell cell) {};
+  static final CellAction flagAction = (Cell cell) {
+    cell.flag();
+  };
+
+  static final CellAction evaluateAction = (Cell cell) {
+    cell.evaluate();
+  };
 }
 
 typedef void ChangeNotifier(VoidCallback block);

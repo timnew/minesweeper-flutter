@@ -10,7 +10,7 @@ class MineFieldView extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         decoration: BoxDecoration(border: Border.all(color: Colors.blue)),
         child: GridView.count(
-            crossAxisCount: mineField.width, children: _renderChildren()),
+            crossAxisCount: mineField.size.width, children: _renderChildren()),
       );
 
   List<Widget> _renderChildren() => mineField.cells
@@ -30,10 +30,11 @@ class CellView extends StatelessWidget {
     switch (state) {
       case CellState.Concealed:
         return _render(_consealedBox,
-            cell.content == CellContent.Mine ? _mineContent : null);
+            cell.content == CellContent.Mine ? _mineContent : null
+        );
       case CellState.Revealed:
         return _render(_revealedBox,
-            cell.minesNearBy > 0 ? Text(cell.minesNearBy.toString()) : null);
+            cell.minesNearBy > 0 ? Text("${cell.minesNearBy}") : null);
       case CellState.Flagged:
         return _render(_consealedBox, _flagContent);
       case CellState.Exploded:
