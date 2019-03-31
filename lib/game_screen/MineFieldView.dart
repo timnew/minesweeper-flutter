@@ -32,7 +32,8 @@ class CellView extends StatelessWidget {
         return _render(_consealedBox,
             cell.content == CellContent.Mine ? _mineContent : null);
       case CellState.Revealed:
-        return _render(_revealedBox, null); // TODO: show number if needed
+        return _render(_revealedBox,
+            cell.minesNearBy > 0 ? Text(cell.minesNearBy.toString()) : null);
       case CellState.Flagged:
         return _render(_consealedBox, _flagContent);
       case CellState.Exploded:
@@ -59,7 +60,7 @@ class CellView extends StatelessWidget {
 
   Widget _render(Decoration border, Widget content) => GestureDetector(
       onTap: () {
-        cell.act(Cell.flagAction);
+        cell.act();
       },
       child: Container(
           width: 10,

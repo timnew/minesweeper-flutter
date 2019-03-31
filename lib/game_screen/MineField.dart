@@ -1,29 +1,18 @@
 import 'package:flutter/material.dart';
 
-class MineFieldController {
-  MineField mineField;
-
-  void reset() {
-    mineField.notifyChanged(() {
-      mineField.reset();
-    });
-  }
-}
-
 typedef void StateChangedNotifier(VoidCallback block);
 
 class MineField {
   final int width;
   final int height;
   final int mineCount;
-  final MineFieldController controller;
   final List<Cell> cells;
   final StateChangedNotifier notifyChanged;
 
-  MineField(this.width, this.height, this.mineCount, this.controller,
-      this.notifyChanged)
+  CellAction currentAction = Cell.revealAction;
+
+  MineField(this.width, this.height, this.mineCount, this.notifyChanged)
       : cells = List(width * height) {
-    controller.mineField = this;
     reset();
   }
 
@@ -73,14 +62,18 @@ class Cell {
 
   int get minesNearBy => _minesNearBy;
 
-  void act(CellAction action) {
-    parent.notifyChanged(() {
-      _state = action(this);
-    });
-  }
-
   Cell({this.parent, this.x, this.y, this.content}) : name = "($x, $y)" {
     this._state = CellState.Concealed;
+  }
+
+  void act() {
+    parent.currentAction(this);
+  }
+
+  void updateState(CellState newState) {
+    parent.notifyChanged(() {
+      this._state = newState;
+    });
   }
 
   static final CellAction revealAction = (Cell cell) {};
@@ -88,11 +81,13 @@ class Cell {
   static final CellAction flagAction = (Cell cell) {
     switch (cell.state) {
       case CellState.Concealed:
-        return CellState.Flagged;
+        cell.updateState(CellState.Flagged);
+        break;
       case CellState.Flagged:
-        return CellState.Concealed;
+        cell.updateState(CellState.Concealed);
+        break;
       default:
-        return cell.state;
+        break;
     }
   };
 
@@ -114,4 +109,4 @@ enum CellState {
   WrongFlag,
 }
 
-typedef CellState CellAction(Cell cell);
+typedef void CellAction(Cell cell);
