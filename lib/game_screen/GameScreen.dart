@@ -15,10 +15,21 @@ class _GameScreenState extends State<GameScreen> {
     _mineField = MineField(Size(10, 10), 10, this.setState);
   }
 
+   String _title() {
+     switch (_mineField.gameResult) {
+       case GameResult.Succeeded:
+         return "You Win";
+       case GameResult.Failed:
+         return "You Lose";
+       case GameResult.Undetermined:
+         return "Mine Sweeper";
+     }
+   }
+
   @override
   Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
-        title: Text('Mine Sweeper'),
+        title: Text(_title()),
       ),
       body: MineFieldView(mineField: _mineField),
       persistentFooterButtons: <Widget>[
@@ -28,32 +39,35 @@ class _GameScreenState extends State<GameScreen> {
           });
         },),
         FlatButton(child: Icon(Icons.flag),
-          textColor: _mineField.currentAction == Cell.flagAction
+          textColor: _mineField.currentAction == CellAction.Flag
               ? Colors.blue
               : Colors.black,
           onPressed: () {
             setState(() {
-              _mineField.currentAction = Cell.flagAction;
+              _mineField.currentAction = CellAction.Flag;
             });
           },),
         FlatButton(child: Icon(Icons.location_searching),
-          textColor: _mineField.currentAction == Cell.revealAction
+          textColor: _mineField.currentAction == CellAction.Reveal
               ? Colors.blue
               : Colors.black,
           onPressed: () {
             setState(() {
-              _mineField.currentAction = Cell.revealAction;
+              _mineField.currentAction = CellAction.Reveal;
             });
           },),
         FlatButton(
           child: Icon(Icons.adb),
-          textColor: _mineField.currentAction == Cell.evaluateAction ? Colors
+          textColor: _mineField.currentAction == CellAction.Evaluate ? Colors
               .blue : Colors.black,
           onPressed: () {
             setState(() {
-              _mineField.currentAction = Cell.evaluateAction;
+              _mineField.currentAction = CellAction.Evaluate;
             });
-          },)
+          },
+        ),
+        Text("B: ${_mineField.remainingCellCount} M: ${_mineField
+            .remainingMineCount}")
       ]
   );
 }

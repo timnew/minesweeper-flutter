@@ -8,7 +8,19 @@ class MineField {
   final List<Cell> cells;
   final StateChangedNotifier notifyChanged;
 
-  CellAction currentAction = Cell.revealAction;
+  GameResult _gameResult;
+
+  GameResult get gameResult => _gameResult;
+
+  int _remainingCellCount;
+
+  int get remainingCellCount => _remainingCellCount;
+
+  int _remainingMineCount;
+
+  int get remainingMineCount => _remainingMineCount;
+
+  CellAction currentAction;
 
   MineField(this.size, this.mineCount, this.notifyChanged)
       : cells = List(size.area()) {
@@ -42,6 +54,25 @@ class MineField {
         x = 0;
       }
     }
+
+    _remainingMineCount = mineCount;
+    _remainingCellCount = cells.length - mineCount;
+    _gameResult = GameResult.Undetermined;
+    currentAction = CellAction.Reveal;
+  }
+
+  void updateMineCount(int delta) {
+    notifyChanged(() {
+      _remainingMineCount += delta;
+    });
+  }
+
+  void decreaseCellCount() {
+    notifyChanged(() {
+      if (--_remainingCellCount == 0) {
+        endGame(GameResult.Succeeded);
+      }
+    });
   }
 
   List<Cell> findNearByCells(Cell cell) =>
@@ -51,6 +82,18 @@ class MineField {
           .map((p) => size.convertToIndex(p))
           .map((i) => cells[i])
           .toList(growable: false);
+
+  void endGame(GameResult result) {
+    notifyChanged(() {
+      _gameResult = result;
+    });
+  }
+}
+
+enum GameResult {
+  Failed,
+  Undetermined,
+  Succeeded
 }
 
 class Size {
@@ -111,7 +154,17 @@ class Cell {
   }
 
   void act() {
-    parent.currentAction(this);
+    switch (parent.currentAction) {
+      case CellAction.Reveal:
+        this.reveal();
+        break;
+      case CellAction.Flag:
+        this.flag();
+        break;
+      case CellAction.Evaluate:
+        this.evaluate();
+        break;
+    }
   }
 
   void updateState(CellState newState) {
@@ -124,9 +177,11 @@ class Cell {
     switch (state) {
       case CellState.Concealed:
         updateState(CellState.Flagged);
+        parent.updateMineCount(-1);
         break;
       case CellState.Flagged:
         updateState(CellState.Concealed);
+        parent.updateMineCount(1);
         break;
       default:
         break;
@@ -139,6 +194,7 @@ class Cell {
 
     if (content == CellContent.Mine) {
       updateState(CellState.Exploded);
+      parent.endGame(GameResult.Failed);
       return;
     }
 
@@ -151,6 +207,8 @@ class Cell {
 
     updateState(CellState.Revealed);
 
+    parent.decreaseCellCount();
+
     if (minesNearBy == 0) {
       nearByCells.forEach((f) {
         f.reveal();
@@ -162,20 +220,24 @@ class Cell {
     if (state != CellState.Revealed || minesNearBy == 0)
       return;
 
+    final nearByCells = parent.findNearByCells(this);
 
+    final flagsNearBy = nearByCells
+        .where((c) => c.state == CellState.Flagged)
+        .length;
+
+    if (flagsNearBy != minesNearBy)
+      return;
+
+    nearByCells.forEach((c) => c.reveal());
+
+    if (parent.gameResult == GameResult.Failed) {
+      nearByCells
+          .where((c) => c.state == CellState.Flagged)
+          .where((c) => c.content != CellContent.Mine)
+          .forEach((c) => c.updateState(CellState.WrongFlag));
+    }
   }
-
-  static final CellAction revealAction = (Cell cell) {
-    cell.reveal();
-  };
-
-  static final CellAction flagAction = (Cell cell) {
-    cell.flag();
-  };
-
-  static final CellAction evaluateAction = (Cell cell) {
-    cell.evaluate();
-  };
 }
 
 typedef void ChangeNotifier(VoidCallback block);
@@ -193,4 +255,9 @@ enum CellState {
   WrongFlag,
 }
 
-typedef void CellAction(Cell cell);
+
+enum CellAction {
+  Reveal,
+  Flag,
+  Evaluate
+}
