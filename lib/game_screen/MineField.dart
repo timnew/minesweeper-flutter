@@ -4,9 +4,13 @@ class MineFieldController {
   MineField mineField;
 
   void reset() {
-    mineField.reset();
+    mineField.notifyChanged(() {
+      mineField.reset();
+    });
   }
 }
+
+typedef void StateChangedNotifier(VoidCallback block);
 
 class MineField {
   final int width;
@@ -14,9 +18,10 @@ class MineField {
   final int mineCount;
   final MineFieldController controller;
   final List<Cell> cells;
+  final StateChangedNotifier notifyChanged;
 
-  MineField(this.width, this.height, this.mineCount,
-      this.controller)
+  MineField(this.width, this.height, this.mineCount, this.controller,
+      this.notifyChanged)
       : cells = List(width * height) {
     controller.mineField = this;
     reset();
@@ -68,20 +73,14 @@ class Cell {
 
   int get minesNearBy => _minesNearBy;
 
-  ChangeNotifier _notifier;
-
   void act(CellAction action) {
-    _notifier(() {
+    parent.notifyChanged(() {
       _state = action(this);
     });
   }
 
   Cell({this.parent, this.x, this.y, this.content}) : name = "($x, $y)" {
     this._state = CellState.Concealed;
-  }
-
-  void onChanged(ChangeNotifier notifier) {
-    _notifier = notifier;
   }
 
   static final CellAction revealAction = (Cell cell) {};

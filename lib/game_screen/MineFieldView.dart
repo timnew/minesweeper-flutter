@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:minesweeper/game_screen/MineField.dart';
 
 class MineFieldView extends StatelessWidget {
-
   final MineField mineField;
 
   MineFieldView({Key key, this.mineField}) : super(key: key);
@@ -10,13 +9,11 @@ class MineFieldView extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
         decoration: BoxDecoration(border: Border.all(color: Colors.blue)),
-        child:
-        GridView.count(
+        child: GridView.count(
             crossAxisCount: mineField.width, children: _renderChildren()),
       );
 
-  List<Widget> _renderChildren() =>
-      mineField.cells
+  List<Widget> _renderChildren() => mineField.cells
       .map((cell) => CellView(key: Key(cell.name), cell: cell))
       .toList(growable: false);
 }
@@ -32,8 +29,7 @@ class CellView extends StatelessWidget {
   Widget build(BuildContext context) {
     switch (state) {
       case CellState.Concealed:
-        return _render(
-            _consealedBox,
+        return _render(_consealedBox,
             cell.content == CellContent.Mine ? _mineContent : null);
       case CellState.Revealed:
         return _render(_revealedBox, null); // TODO: show number if needed
@@ -57,15 +53,13 @@ class CellView extends StatelessWidget {
 
   static Widget _mineContent = Icon(Icons.settings);
 
-  Widget _render(Decoration border, Widget content) =>
-      GestureDetector(
-          onTap: () {
-            cell.act(Cell.flagAction);
-          },
-          child: Container(
-              width: 10,
-              height: 10,
-              decoration: border,
-              child: Center(child: content))
-      );
+  Widget _render(Decoration border, Widget content) => GestureDetector(
+      onTap: () {
+        cell.act(Cell.flagAction);
+      },
+      child: Container(
+          width: 10,
+          height: 10,
+          decoration: border,
+          child: Center(child: content)));
 }

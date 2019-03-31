@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:minesweeper/game_screen/MineField.dart';
-import 'package:minesweeper/game_screen/MineGrid.dart';
+import 'package:minesweeper/game_screen/MineFieldView.dart';
 
 class GameScreen extends StatefulWidget {
   @override
@@ -14,7 +14,7 @@ class _GameScreenState extends State<GameScreen> {
 
   _GameScreenState() {
     _fieldController = MineFieldController();
-    _mineField = MineField(10, 10, 10, _fieldController);
+    _mineField = MineField(10, 10, 10, _fieldController, this.setState);
   }
 
   @override
@@ -22,19 +22,11 @@ class _GameScreenState extends State<GameScreen> {
       appBar: AppBar(
         title: Text('Mine Sweeper'),
       ),
-      body:
-      Row(
-        children: <Widget>[
-          MineFieldView(mineField: _mineField,),
-          RaisedButton(
-            onPressed: () {
-              setState(() {
-                _fieldController.reset();
-              });
-            },
-            child: Text("Reset"),
-          )
-        ],
-      )
+      body: MineFieldView(mineField: _mineField),
+      persistentFooterButtons: <Widget>[
+        FlatButton(child: Text("Reset"), onPressed: () {
+          _fieldController.reset();
+        },)
+      ]
   );
 }
