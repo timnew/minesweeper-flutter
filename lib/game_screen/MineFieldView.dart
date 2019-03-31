@@ -30,7 +30,7 @@ class CellView extends StatelessWidget {
     switch (state) {
       case CellState.Concealed:
         return _render(_consealedBox,
-            cell.content == CellContent.Mine ? _mineContent : null
+            null
         );
       case CellState.Revealed:
         return _render(_revealedBox,
