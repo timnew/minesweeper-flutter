@@ -66,6 +66,16 @@ class _GameScreenState extends State<GameScreen> {
             });
           },
         ),
+        FlatButton(
+          child: Icon(Icons.adb),
+          textColor: _mineField.currentAction == CellAction.SuperEvaluate ? Colors
+              .blue : Colors.red,
+          onPressed: () {
+            setState(() {
+              _mineField.currentAction = CellAction.SuperEvaluate;
+            });
+          },
+        ),
         Text("B: ${_mineField.remainingCellCount} M: ${_mineField
             .remainingMineCount}")
       ]

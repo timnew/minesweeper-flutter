@@ -156,7 +156,10 @@ class Cell {
         this.flag();
         break;
       case CellAction.Evaluate:
-        this.evaluate();
+        this.evaluate(false);
+        break;
+      case CellAction.SuperEvaluate:
+        this.evaluate(true);
         break;
     }
   }
@@ -210,7 +213,7 @@ class Cell {
     }
   }
 
-  void evaluate() {
+  void evaluate(bool superMode) {
     if (state != CellState.Revealed || minesNearBy == 0)
       return;
 
@@ -230,8 +233,27 @@ class Cell {
           .where((c) => c.state == CellState.Flagged)
           .where((c) => c.content != CellContent.Mine)
           .forEach((c) => c.updateState(CellState.WrongFlag));
+
+      if (!superMode)
+        return;
+
+      final concealedOrFlaggedCount = nearByCells
+          .where((c) =>
+      (c.state == CellState.Flagged) ||
+          (c.state == CellState.Concealed)
+      )
+          .length;
+
+      if (concealedOrFlaggedCount != minesNearBy)
+        return;
+
+      nearByCells
+          .where((c) => c.state == CellState.Concealed)
+          .forEach((c) => c.flag());
     }
   }
+
+
 }
 
 typedef void ChangeNotifier(VoidCallback block);
@@ -253,5 +275,6 @@ enum CellState {
 enum CellAction {
   Reveal,
   Flag,
-  Evaluate
+  Evaluate,
+  SuperEvaluate
 }
