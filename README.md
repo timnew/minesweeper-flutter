@@ -1,1 +1,1 @@
-# minesweeper-flutter
+# MineSweeper
