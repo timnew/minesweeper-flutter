@@ -47,17 +47,19 @@ class CellView extends StatelessWidget {
   }
 
   static Decoration _consealedBox = BoxDecoration(
-      border: Border.all(color: Colors.black), color: Colors.grey);
+      border: Border.all(color: Colors.blue),
+      color: Colors.lightBlue[300].withAlpha(50));
 
   static Decoration _revealedBox = BoxDecoration(
-      border: Border.all(color: Colors.black), color: Colors.white);
+      border: Border.all(color: Colors.lightGreen[400]),
+      color: Colors.lightGreen[100].withAlpha(50));
 
   static Decoration _explodedBox = BoxDecoration(
       border: Border.all(color: Colors.red), color: Colors.red.withAlpha(50));
 
-  static Widget _flagContent = Icon(Icons.flag);
+  static Widget _flagContent = Icon(Icons.flag, color: Colors.red[300]);
 
-  static Widget _mineContent = Icon(Icons.settings);
+  static Widget _mineContent = Icon(Icons.settings,color: Colors.blueGrey[500]);
 
   Widget _render(Decoration border, Widget content) => GestureDetector(
       onTap: () {

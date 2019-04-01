@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:minesweeper/game_screen/MineField.dart';
 import 'package:minesweeper/game_screen/MineFieldView.dart';
+import 'package:minesweeper/game_screen/SettingSheet.dart';
 
 class GameScreen extends StatefulWidget {
   @override
@@ -12,7 +13,7 @@ class _GameScreenState extends State<GameScreen> {
    MineField _mineField;
 
   _GameScreenState() {
-    _mineField = MineField(Size(18, 24), 60, this.setState);
+    _mineField = MineField(Size(14, 50), 100, this.setState);
   }
 
    String _title() {
@@ -30,6 +31,15 @@ class _GameScreenState extends State<GameScreen> {
   Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
         title: Text(_title()),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.tune),
+            tooltip: 'Settings',
+            onPressed: () {
+              _showSettings(context);
+            },
+          ),
+        ],
       ),
       body: MineFieldView(mineField: _mineField),
       persistentFooterButtons: <Widget>[
@@ -82,4 +92,25 @@ class _GameScreenState extends State<GameScreen> {
             .remainingMineCount}")
       ]
   );
+
+   void _showSettings(BuildContext context) async {
+     final MineFieldSettings settings = await showModalBottomSheet(
+         context: context,
+         builder: (context) =>
+             SettingSheet(
+                 settings: MineFieldSettings(
+                     _mineField.size.width,
+                     _mineField.size.height,
+                     _mineField.mineCount
+                 )
+             )
+     );
+
+     if (settings != null) {
+       setState(() {
+         this._mineField = settings.createMineField(this.setState);
+       });
+     }
+   }
+
 }
