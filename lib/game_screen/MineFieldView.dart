@@ -33,8 +33,7 @@ class CellView extends StatelessWidget {
             null
         );
       case CellState.Revealed:
-        return _render(_revealedBox,
-            cell.minesNearBy > 0 ? Text("${cell.minesNearBy}") : null);
+        return _render(_revealedBox, _renderMineMarker());
       case CellState.Flagged:
         return _render(_consealedBox, _flagContent);
       case CellState.Exploded:
@@ -46,7 +45,31 @@ class CellView extends StatelessWidget {
     }
   }
 
-  static Decoration _consealedBox = BoxDecoration(
+  Widget _renderMineMarker() {
+    if (cell.minesNearBy == 0)
+      return null;
+
+    return Text(
+      cell.minesNearBy.toString(),
+      style: TextStyle(
+          color: _minesCountColors[cell.minesNearBy],
+          fontWeight: FontWeight.bold
+      ),
+    );
+  }
+
+  static List<Color> _minesCountColors = [
+    Colors.transparent, // 0
+    Colors.lightGreen, // 1
+    Colors.amber, // 2
+    Colors.orange, // 3
+    Colors.deepOrange, // 4
+    Colors.red, // 5
+    Colors.pink, // 7
+    Colors.pink[900] // 8
+  ];
+
+  Decoration _consealedBox = BoxDecoration(
       border: Border.all(color: Colors.blue),
       color: Colors.lightBlue[300].withAlpha(50));
 
@@ -70,4 +93,6 @@ class CellView extends StatelessWidget {
           height: 10,
           decoration: border,
           child: Center(child: content)));
+
+
 }
